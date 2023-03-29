@@ -4,16 +4,9 @@
 #define fileRequests "../requests.json"
 #define fileAnswers "../answers.json"
 
-
-using json = nlohmann::json;
-
-using namespace std;
-
 class ConverterJSON {
 public:
     ConverterJSON() = default;
-
-    ~ConverterJSON() = default;
 
     std::vector<std::string> GetTextDocuments() {
         ifstream input(fileConfig);
@@ -62,12 +55,13 @@ public:
             json temp;
             input >> temp;
             input.close();
+            cout << temp.begin().value() << endl;
             return temp.begin().value();
         }
         return {};
     }
 
-    void putAnswers(std::vector<std::vector<std::pair<size_t, float>>> answers) {
+    void putAnswers(std::vector<std::vector<std::pair<int, float>>> answers) {
         ifstream input(fileAnswers);
         json tempAnswers;
         input >> tempAnswers;
@@ -122,12 +116,12 @@ public:
     }
 
     void ClearFiles() {
-        ofstream clearFile(fileRequests);
+        /*ofstream clearFile(fileRequests);
         if (clearFile.is_open()) {
             clearFile << (json) {{"requests", {}}};
             clearFile.close();
-        }
-        clearFile.open(fileAnswers);
+        }*/
+        ofstream clearFile(fileAnswers);
         if (clearFile.is_open()) {
             clearFile << (json) {{"answers", {}}};
             clearFile.close();

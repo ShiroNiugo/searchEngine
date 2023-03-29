@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 
 struct RelativeIndex {
     size_t doc_id;
@@ -12,27 +11,14 @@ struct RelativeIndex {
 
 class SearchServer {
 public:
-
     SearchServer(InvertedIndex &idx) : _index(idx) {};
 
     std::vector<std::vector<RelativeIndex>> search(const std::vector<std::string> &queries_input){
-        std::vector<std::vector<RelativeIndex>> results;
+        std::vector<std::vector<RelativeIndex>> results{};
         //split and count words search
-        for (auto &query : queries_input){
-            map<size_t, size_t> absRelevance;
-            stringstream ss(query);
-            string word;
-            while(getline(ss, word, ' ')){
-                std::vector<Entry> temp = _index.GetWordCount(word);
-                if (!temp.empty())
-                    for(auto it = temp.begin(); it != temp.end(); it++)
-                        absRelevance[it->doc_id] += it->count;
-            }
-            if(!absRelevance.empty()){
-                int maxCount = max_element(absRelevance.begin(), absRelevance.end())->second;
-                for (auto it = absRelevance.begin(); it!= absRelevance.end(); it++)
-                    results.push_back({{it->first, ((float)it->second/(float)maxCount)}});
-            }else{
+        for (auto query : queries_input){
+            auto temp = _index.GetWordCount(query);
+            if(!temp.empty()){
                 results.push_back({});
             }
         }

@@ -1,7 +1,5 @@
 #pragma once
 
-using namespace std;
-
 struct Entry {
     size_t doc_id;
     size_t count;
@@ -21,13 +19,21 @@ public:
             if (!docs[i].empty()) {
                 stringstream ss(docs[i]);
                 std::string word;
-                ss >> word;
-                if (freq_dictionary[word].size() == 5) break;
-                if(freq_dictionary.find(word) != freq_dictionary.end())
-                    freq_dictionary[word].push_back({i, 1});
-                else
-                    freq_dictionary[word][i].count++;
-                std::cout << "+" << std::endl;//test
+                while(getline(ss, word, ' ')){
+                    if(freq_dictionary.find(word) != freq_dictionary.end())
+                        freq_dictionary[word].push_back({i, 1});
+                    else
+                        freq_dictionary[word][i].count++;
+                }
+            }
+        }
+        sort(freq_dictionary.begin()->second.begin(), freq_dictionary.end()->second.end(), [](Entry &a, Entry &b){
+            return a.count < b.count;
+        });
+        for(auto &[keyWord, valueWord] : freq_dictionary){
+            cout << keyWord << ": " << endl;
+            for(auto &[key, value] : valueWord){
+                cout << "\t" << key << ": " << value << endl;
             }
         }
     }
@@ -35,8 +41,7 @@ public:
     std::vector<Entry> GetWordCount(const std::string &word) {
         return freq_dictionary[word];
     }
-
 private:
-    std::vector<std::string> docs;
+    std::vector<std::string> docs{};
     std::map<std::string, std::vector<Entry>> freq_dictionary;
 };

@@ -9,6 +9,9 @@
 #include <nlohmann/json.hpp>
 //#include "gtest/gtest.h"
 
+using namespace std;
+using json = nlohmann::json;
+
 #include "../header/converterJSON.h"
 #include "../header/invertedIndex.h"
 #include "../header/searchServer.h"
@@ -18,23 +21,14 @@ using namespace std;
 int main() {
     ConverterJSON convJSON;
     InvertedIndex invIndex;
+    SearchServer server(invIndex);
     if (!convJSON.fileConfigVerify())
         return 0;
     invIndex.UpdateDocumentBase(convJSON.GetTextDocuments());
+    vector<std::string> requests = convJSON.GetRequests();
+    auto result = server.search(requests);
     convJSON.ClearFiles();
-    std::string command;
-    std::cout << "+" << std::endl;//test
-    while (cout << "search: ", std::cin.ignore(), std::getline(std::cin, command), std::cin.ignore()) {
-        std::cout << "+" << std::endl;//test
-        if (command == "!exit") break;
-        else {
-            invIndex.GetWordCount(command);
-            auto *server = new SearchServer(invIndex);
-            auto result = server->search(convJSON.GetRequests());
-            //convJSON.putAnswers(result);
-            delete server;
-        }
-    }
+    //convJSON.putAnswers(result);
     return 0;
 }
 
@@ -46,14 +40,14 @@ int main() {
 //TestInvertedIndexFunctionality
 /*void TestInvertedIndexFunctionality
 (const vector<string> &docs, const vector<string> &requests, const std::vector<vector<Entry>> &expected) {
-    std::vector<std::vector<Entry>> result;
-    InvertedIndex idx;
-    idx.UpdateDocumentBase(docs);
-    for (auto &request: requests) {
-        std::vector<Entry> word_count = idx.GetWordCount(request);
-        result.push_back(word_count);
-    }
-    ASSERT_EQ(result, expected);
+        std::vector<std::vector<Entry>> result;
+        InvertedIndex idx;
+        idx.UpdateDocumentBase(docs);
+        for (auto &request: requests) {
+            std::vector<Entry> word_count = idx.GetWordCount(request);
+            result.push_back(word_count);
+        }
+        ASSERT_EQ(result, expected);
 }
 
 TEST(TestCaseInvertedIndex, TestBasic) {
@@ -76,15 +70,9 @@ TEST(TestCaseInvertedIndex, TestBasic2) {
     };
     const vector<string> requests = {"milk", "water", "cappuchino"};
     const vector<vector<Entry>> expected = {
-            {
-                    {0, 4}, {1, 1}, {2, 5}
-            },
-            {
-                    {0, 2}, {1, 2}, {2, 5}
-            },
-            {
-                    {3, 1}
-            }
+            {{0, 4}, {1, 1}, {2, 5}},
+            {{0, 2}, {1, 2}, {2, 5}},
+            {{3, 1}}
     };
     TestInvertedIndexFunctionality(docs, requests, expected);
 }
@@ -96,11 +84,8 @@ TEST(TestCaseInvertedIndex, TestInvertedIndexMissingWord) {
     };
     const vector<string> requests = {"m", "statement"};
     const vector<vector<Entry>> expected = {
-            {
-            },
-            {
-                    {1, 1}
-            }
+            {},
+            {{1, 1}}
     };
     TestInvertedIndexFunctionality(docs, requests, expected);
 }*/
@@ -115,11 +100,8 @@ TEST(TestCaseInvertedIndex, TestInvertedIndexMissingWord) {
     };
     const vector<string> request = {"milk water", "sugar"};
     const std::vector<vector<RelativeIndex>> expected = {
-            {
-                    {2, 1},{0, 0.7},{1, 0.3}
-            },
-            {
-            }
+            {{2, 1},{0, 0.7},{1, 0.3}},
+            {}
     };
     InvertedIndex idx;
     idx.UpdateDocumentBase(docs);
