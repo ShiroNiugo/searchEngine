@@ -24,11 +24,24 @@ int main() {
     SearchServer server(invIndex);
     if (!convJSON.fileConfigVerify())
         return 0;
+    printf("start\n");//test
     invIndex.UpdateDocumentBase(convJSON.GetTextDocuments());
+    printf("+\n");//test
     vector<std::string> requests = convJSON.GetRequests();
-    auto result = server.search(requests);
+
+    printf("+\n");//test
+    auto temp = [&server, &requests](vector<vector<pair<int, float>>> &answers) {
+        for (auto relIndex: server.search(requests))
+            for (auto request: relIndex)
+                answers.push_back({{request.doc_id, request.rank}});
+        return answers;
+    };
+    auto result = (const vector<vector<pair<int, float>>> &) temp;
+    printf("+\n");//test
     convJSON.ClearFiles();
-    //convJSON.putAnswers(result);
+    printf("+\n");//test
+    convJSON.putAnswers(result);
+    printf("end\n");//test
     return 0;
 }
 

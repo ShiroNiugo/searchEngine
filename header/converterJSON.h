@@ -20,19 +20,21 @@ public:
                 if (input.is_open()) {
                     std::string words;
                     int countWords = 0;
-                    while(!input.eof()) {
+                    while (!input.eof()) {
                         std::string word;
                         input >> word;
-                        words.append(" "+((word.size()<=100)? word : word.substr(0,100)));
+                        words+=" " + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
-                        if(countWords == 1000) break;
+                        if (countWords == 1000) break;
                     }
                     textDocuments.push_back(words);
                     input.close();
                 }
             }
+            /*
             for (const auto &document: textDocuments)
                 cout << document << endl;
+             */
             return textDocuments;
         }
         return {};
@@ -61,7 +63,7 @@ public:
         return {};
     }
 
-    void putAnswers(std::vector<std::vector<std::pair<int, float>>> answers) {
+    void putAnswers(vector<vector<pair<int, float>>> answers) {
         ifstream input(fileAnswers);
         json tempAnswers;
         input >> tempAnswers;
