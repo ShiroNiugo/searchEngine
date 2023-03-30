@@ -8,14 +8,14 @@ class ConverterJSON {
 public:
     ConverterJSON() = default;
 
-    std::vector<std::string> GetTextDocuments() {
+    static std::vector<std::string> GetTextDocuments() {
         ifstream input(fileConfig);
         if (input.is_open()) {
             json file;
             input >> file;
             input.close();
             std::vector<std::string> textDocuments;
-            for (auto document: file.find("files").value()) {
+            for (const auto &document: file.find("files").value()) {
                 input.open(document);
                 if (input.is_open()) {
                     std::string words;
@@ -23,7 +23,7 @@ public:
                     while (!input.eof()) {
                         std::string word;
                         input >> word;
-                        words+=" " + ((word.size() <= 100) ? word : word.substr(0, 100));
+                        words += " " + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
                         if (countWords == 1000) break;
                     }
@@ -31,16 +31,12 @@ public:
                     input.close();
                 }
             }
-            /*
-            for (const auto &document: textDocuments)
-                cout << document << endl;
-             */
             return textDocuments;
         }
         return {};
     }
 
-    int GetResponsesLimit() {
+    static int GetResponsesLimit() {
         ifstream input(fileConfig);
         if (input.is_open()) {
             json temp;
@@ -51,58 +47,48 @@ public:
         return 0;
     }
 
-    std::vector<std::string> GetRequests() {
+    static std::vector<std::string> GetRequests() {
         ifstream input(fileRequests);
         if (input.is_open()) {
             json temp;
             input >> temp;
             input.close();
-            cout << temp.begin().value() << endl;
+            //cout << temp.begin().value() << endl;//test
             return temp.begin().value();
         }
         return {};
     }
 
-    void putAnswers(vector<vector<pair<int, float>>> answers) {
+    static void putAnswers(const vector<vector<pair<int, float>>> &answers) {
         ifstream input(fileAnswers);
         json tempAnswers;
         input >> tempAnswers;
         input.close();
-        auto sizeRequest = (int) tempAnswers.begin().value().size();
-        auto sizeAnswers = (int) answers.size();
-        json t;
+        auto sizeRequest = 1;
 
-        for (auto one: answers)
-            for (auto &[key, value]: one)
-                t += {{"docid", key},
-                      {"rank",  value}};
-
-        std::string request = "request" + (std::string) ((to_string(sizeRequest).length() == 1) ? "00" : (to_string(
-                sizeRequest).length() == 2) ? "0" : "") + to_string(sizeRequest == 0 ? 1 : sizeRequest + 1);
-
-        json temp;
-        if (sizeAnswers > 0) {
-            temp = {
-                    {request, {
-                            {"result", "true"},
-                            {"relevance", t}
-                    }}
-            };
-        } else {
-            temp = {
-                    {request, {
-                            {"result", "false"}
-                    }}
-            };
+        for (const auto &one: answers) {
+            json temp;
+            std::string request = "request000";
+            ((to_string(sizeRequest).length() < 3) ? request.erase(request.length() - to_string(sizeRequest).length()) : request.erase(7));
+            request += to_string(sizeRequest);
+            sizeRequest++;
+            if(one.empty()){
+                temp = {request, {{"result", "false"}}};
+            }else{
+                json t;
+                for (const auto &[key, value] : one)
+                    t += {{"doc_id", key}, {"rank", value}};
+                temp = {request, {{"result", "true"}, {"relevance", t}}};
+            }
+            tempAnswers.begin().value().push_back(temp);
         }
         ofstream output(fileAnswers);
-        tempAnswers.begin().value().push_back(json::object_t::value_type(temp.begin().key(), temp.begin().value()));
         output << tempAnswers;
-        cout << tempAnswers << endl;//test
+        //cout << tempAnswers << endl;//test
         output.close();
     }
 
-    bool fileConfigVerify() {
+    static bool fileConfigVerify() {
         ifstream input(fileConfig);
         if (input.is_open()) {
             json temp;
@@ -117,12 +103,7 @@ public:
         }
     }
 
-    void ClearFiles() {
-        /*ofstream clearFile(fileRequests);
-        if (clearFile.is_open()) {
-            clearFile << (json) {{"requests", {}}};
-            clearFile.close();
-        }*/
+    static void ClearFiles() {
         ofstream clearFile(fileAnswers);
         if (clearFile.is_open()) {
             clearFile << (json) {{"answers", {}}};
