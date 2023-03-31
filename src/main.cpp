@@ -28,8 +28,12 @@ int main() {
         auto foo = server.search(requests);
         for (auto const &relIndex: foo) {
             answers.emplace_back();
-            for (auto request: relIndex)
+            int limit = ConverterJSON::GetResponsesLimit();
+            for (auto request: relIndex) {
                 answers.back().emplace_back(request.doc_id, request.rank);
+                limit--;
+                if (limit == 0) break;
+            }
         }
         return answers;
     };
