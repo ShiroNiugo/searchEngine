@@ -8,7 +8,6 @@
 #include <cmath>
 
 #include <nlohmann/json.hpp>
-//#include "gtest/gtest.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -38,8 +37,3 @@ int main() {
     ConverterJSON::putAnswers(result());
     return 0;
 }
-
-//TEST
-/*TEST(sample_test_case, sample_test) {
-    EXPECT_EQ(1, 1);
-}*/

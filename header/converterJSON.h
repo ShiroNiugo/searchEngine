@@ -53,7 +53,6 @@ public:
             json temp;
             input >> temp;
             input.close();
-            //cout << temp.begin().value() << endl;//test
             return temp.begin().value();
         }
         return {};
@@ -86,7 +85,6 @@ public:
         }
         ofstream output(fileAnswers);
         output << tempAnswers;
-        //cout << tempAnswers << endl;//test
         output.close();
     }
 
