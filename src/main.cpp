@@ -25,10 +25,11 @@ int main() {
 
     SearchServer server(invIndex);
     auto result = [&server, &requests](vector<vector<pair<int, float>>> answers = {}){
+        int maxLimit = 0;
         auto foo = server.search(requests);
         for (auto const &relIndex: foo) {
             answers.emplace_back();
-            int limit = ConverterJSON::GetResponsesLimit();
+            int limit = (maxLimit != 0) ? maxLimit : ConverterJSON::GetResponsesLimit();
             for (auto request: relIndex) {
                 answers.back().emplace_back(request.doc_id, request.rank);
                 limit--;

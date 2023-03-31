@@ -49,13 +49,36 @@ public:
 
     static std::vector<std::string> GetRequests() {
         ifstream input(fileRequests);
-        if (input.is_open()) {
-            json temp;
-            input >> temp;
-            input.close();
-            return temp.begin().value();
+        json tempRequests;
+        input >> tempRequests;
+        input.close();
+        std::vector<std::string> tempValue = tempRequests.begin().value();
+        if (tempValue.size() > 1000) tempValue.resize(1000);
+        for (auto item = tempValue.begin(); item != tempValue.end();) {
+            stringstream ss(*item);
+            string word, tempWords;
+            for (int i = 1; getline(ss, word, ' '); i++) {
+                if (!word.empty()) {
+                    bool latLitter = true;
+                    for (auto l: word) {
+                        if (!islower(l)) {
+                            latLitter = false;
+                            break;
+                        }
+                    }
+                    if (!latLitter) {
+                        tempValue.erase(item);
+                        break;
+                    } else {
+                        tempWords += (i == 1) ? word : " " + word;
+                        item++;
+                    }
+                }
+                if (i > 10 || ss.eof()) break;
+            }
+            if (!tempWords.empty()) *item = tempWords;
         }
-        return {};
+        return tempValue;
     }
 
     static void putAnswers(const vector<vector<pair<int, float>>> &answers) {
@@ -64,28 +87,31 @@ public:
         input >> tempAnswers;
         input.close();
         auto sizeRequest = 1;
-
-        for (const auto &one: answers) {
-            json temp;
-            std::string request = "request000";
-            ((to_string(sizeRequest).length() < 3) ? request.erase(request.length() - to_string(sizeRequest).length()) : request.erase(7));
-            request += to_string(sizeRequest);
-            sizeRequest++;
-            if(one.empty()){
-                temp = {request, {{"result", "false"}}};
-            }else{
-                json t;
-                for (const auto &[key, value] : one) {
-                    t += {{"doc_id", key},
-                          {"rank",   round((double)value*100)/100}};
+        if (!answers.empty()) {
+            for (const auto &one: answers) {
+                json temp;
+                std::string request = "request000";
+                ((to_string(sizeRequest).length() < 3) ? request.erase(
+                        request.length() - to_string(sizeRequest).length())
+                                                       : request.erase(7));
+                request += to_string(sizeRequest);
+                sizeRequest++;
+                if (one.empty()) {
+                    temp = {request, {{"result", "false"}}};
+                } else {
+                    json t;
+                    for (const auto &[key, value]: one) {
+                        t += {{"doc_id", key},
+                              {"rank",   round((double) value * 100) / 100}};
+                    }
+                    temp = {request, {{"result", "true"}, {"relevance", t}}};
                 }
-                temp = {request, {{"result", "true"}, {"relevance", t}}};
+                tempAnswers.begin().value().push_back(temp);
             }
-            tempAnswers.begin().value().push_back(temp);
+            ofstream output(fileAnswers);
+            output << tempAnswers;
+            output.close();
         }
-        ofstream output(fileAnswers);
-        output << tempAnswers;
-        output.close();
     }
 
     static bool fileConfigVerify() {
