@@ -33,10 +33,8 @@ public:
             }
             results.emplace_back();
             if (!absRelevance.empty()) {
-                for (auto &it: absRelevance) {
-                    string tempRank = to_string((float)it.second / maxRelevance);
-                    tempRank.resize(3);
-                    results.back().push_back({it.first, stof(tempRank)});
+                for (auto &[key, value]: absRelevance) {
+                    results.back().push_back({key, (float)value / maxRelevance});
                 }
             }
         }

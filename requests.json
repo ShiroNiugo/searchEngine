@@ -1,7 +1,5 @@
 {
   "requests": [
-    "milk",
-    "water",
-    "cappuccino"
+    "milk water", "sugar"
   ]
 }

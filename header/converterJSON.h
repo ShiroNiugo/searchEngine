@@ -76,8 +76,10 @@ public:
                 temp = {request, {{"result", "false"}}};
             }else{
                 json t;
-                for (const auto &[key, value] : one)
-                    t += {{"doc_id", key}, {"rank", value}};
+                for (const auto &[key, value] : one) {
+                    t += {{"doc_id", key},
+                          {"rank",   round((double)value*100)/100}};
+                }
                 temp = {request, {{"result", "true"}, {"relevance", t}}};
             }
             tempAnswers.begin().value().push_back(temp);
