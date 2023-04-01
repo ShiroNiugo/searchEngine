@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #define fileConfig "../config.json"
 #define fileRequests "../requests.json"
@@ -23,12 +23,19 @@ public:
                     while (!input.eof()) {
                         std::string word;
                         input >> word;
+                        for(auto l : word)
+                            if(!isalpha(l))
+                                throw runtime_error("The words in the file do not follow the rules written in the instructions!");
+
                         words += " " + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
-                        if (countWords == 1000) break;
+                        if (countWords > 1000) break;
                     }
                     textDocuments.push_back(words);
                     input.close();
+                }else{
+                    printf("%s file not found!\n", to_string(document).c_str());
+                    textDocuments.emplace_back();
                 }
             }
             return textDocuments;
@@ -56,27 +63,17 @@ public:
         if (tempValue.size() > 1000) tempValue.resize(1000);
         for (auto item = tempValue.begin(); item != tempValue.end();) {
             stringstream ss(*item);
-            string word, tempWords;
-            for (int i = 1; getline(ss, word, ' '); i++) {
+            string word;
+            for (int i = 0; getline(ss, word, ' ');) {
                 if (!word.empty()) {
-                    bool latLitter = true;
-                    for (auto l: word) {
-                        if (!islower(l)) {
-                            latLitter = false;
-                            break;
-                        }
-                    }
-                    if (!latLitter) {
-                        tempValue.erase(item);
-                        break;
-                    } else {
-                        tempWords += (i == 1) ? word : " " + word;
-                        item++;
-                    }
+                    for (auto l: word)
+                        if (!islower(l))
+                            throw runtime_error("The request does not comply with the rules written in the instructions!");
+                    i++;
                 }
-                if (i > 10 || ss.eof()) break;
+                if (i > 9 || ss.eof()) break;
             }
-            if (!tempWords.empty()) *item = tempWords;
+            item++;
         }
         return tempValue;
     }
@@ -87,31 +84,29 @@ public:
         input >> tempAnswers;
         input.close();
         auto sizeRequest = 1;
-        if (!answers.empty()) {
-            for (const auto &one: answers) {
-                json temp;
-                std::string request = "request000";
-                ((to_string(sizeRequest).length() < 3) ? request.erase(
-                        request.length() - to_string(sizeRequest).length())
-                                                       : request.erase(7));
-                request += to_string(sizeRequest);
-                sizeRequest++;
-                if (one.empty()) {
-                    temp = {request, {{"result", "false"}}};
-                } else {
-                    json t;
-                    for (const auto &[key, value]: one) {
-                        t += {{"doc_id", key},
-                              {"rank",   round((double) value * 100) / 100}};
-                    }
-                    temp = {request, {{"result", "true"}, {"relevance", t}}};
+        for (const auto &one: answers) {
+            json temp;
+            std::string request = "request000";
+            ((to_string(sizeRequest).length() < 3) ? request.erase(
+                    request.length() - to_string(sizeRequest).length())
+                                                   : request.erase(7));
+            request += to_string(sizeRequest);
+            sizeRequest++;
+            if (one.empty()) {
+                temp = {request, {{"result", "false"}}};
+            } else {
+                json t;
+                for (const auto &[key, value]: one) {
+                    t += {{"doc_id", key},
+                          {"rank",   round((double) value * 1000) / 1000}};
                 }
-                tempAnswers.begin().value().push_back(temp);
+                temp = {request, {{"result", "true"}, {"relevance", t}}};
             }
-            ofstream output(fileAnswers);
-            output << tempAnswers;
-            output.close();
+            tempAnswers.begin().value().push_back(temp);
         }
+        ofstream output(fileAnswers);
+        output << tempAnswers;
+        output.close();
     }
 
     static bool fileConfigVerify() {
