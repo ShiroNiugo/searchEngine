@@ -24,10 +24,10 @@ public:
                         std::string word;
                         input >> word;
                         for(auto l : word)
-                            if(!isalpha(l))
+                            if(!islower(l))
                                 throw runtime_error("The words in the file do not follow the rules written in the instructions!");
 
-                        words += " " + ((word.size() <= 100) ? word : word.substr(0, 100));
+                        words += (countWords != 0 ? " " : "") + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
                         if (countWords > 1000) break;
                     }
@@ -61,19 +61,17 @@ public:
         input.close();
         std::vector<std::string> tempValue = tempRequests.begin().value();
         if (tempValue.size() > 1000) tempValue.resize(1000);
-        for (auto item = tempValue.begin(); item != tempValue.end();) {
-            stringstream ss(*item);
+        for (auto & item : tempValue) {
+            stringstream ss(item);
             string word;
-            for (int i = 0; getline(ss, word, ' ');) {
+            for (int i = 0; getline(ss, word, ' '); i++) {
+                if (i > 9 || ss.eof()) break;
                 if (!word.empty()) {
                     for (auto l: word)
                         if (!islower(l))
                             throw runtime_error("The request does not comply with the rules written in the instructions!");
-                    i++;
                 }
-                if (i > 9 || ss.eof()) break;
             }
-            item++;
         }
         return tempValue;
     }

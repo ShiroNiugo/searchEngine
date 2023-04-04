@@ -1,5 +1,3 @@
-#include <utility>
-
 #pragma once
 
 struct Entry {
@@ -20,26 +18,27 @@ public:
         stringstream ss;
         std::string word;
         for (size_t i = 0; i < docs.size(); i++) {
-            ss.str(docs[i]);
-            while (getline(ss, word, ' ')) {
-                if (!word.empty() && (freq_dictionary.find(word) == freq_dictionary.end())) {
-                    freq_dictionary[word].push_back({i, 1});
-                } else if (!word.empty() && (freq_dictionary.find(word) != freq_dictionary.end())) {
-                    auto freq = freq_dictionary.find(word)->second;
-                    if (!freq.empty()) {
-                        auto it = find_if(begin(freq), end(freq), [i](const Entry &e) {
-                            return e.doc_id == i;
-                        });
-                        if (it != end(freq))
-                            freq_dictionary[word][i].count++;
-                        else
-                            freq_dictionary[word].push_back({i, 1});
-                    } else
+            if(!docs[i].empty()) {
+                ss.str(docs[i]);
+                while (ss >> word) {
+                    if (freq_dictionary.find(word) == freq_dictionary.end()) {
                         freq_dictionary[word].push_back({i, 1});
+                    } else {
+                        bool findKey = false;
+                        for(auto &[key, value] : freq_dictionary.find(word)->second)
+                            if(key == i) { value++; findKey = true; break;}
+                        if(!findKey)
+                            freq_dictionary[word].push_back({i, 1});
+                    }
+                    if (ss.eof()) break;
                 }
-                if (ss.eof()) break;
+                ss.clear();
             }
-            ss.clear();
+        }
+        for(auto &[key, value]: freq_dictionary) {
+            sort(value.begin(), value.end(), [](const Entry &a, const Entry &b) {
+                return a.count < b.count;
+            });
         }
     }
 

@@ -32,11 +32,9 @@ public:
                 if(ss.eof()) break;
             }
             results.emplace_back();
-            if (!absRelevance.empty()) {
-                for (auto &[key, value]: absRelevance) {
+            if (!absRelevance.empty())
+                for (auto &[key, value]: absRelevance)
                     results.back().push_back({key, (float)value / maxRelevance});
-                }
-            }
         }
         for(auto &r: results) {
             auto &tempToSort = r;
