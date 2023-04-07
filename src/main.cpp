@@ -1,10 +1,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <exception>
 #include <vector>
-#include <map>
-#include <algorithm>
 
 #include <thread>
 #include <mutex>
@@ -22,15 +19,14 @@ using json = nlohmann::json;
 
 int main() {
     try {
-        InvertedIndex invIndex;
         if (!ConverterJSON::fileConfigVerify())
             return 0;
+        InvertedIndex invIndex;
         invIndex.UpdateDocumentBase(ConverterJSON::GetTextDocuments());
         vector<std::string> requests = ConverterJSON::GetRequests();
 
         SearchServer server(invIndex);
         auto result = [&server, &requests](vector<vector<pair<int, float>>> answers = {}) {
-            int maxLimit = 0;
             auto foo = server.search(requests);
             for (auto const &relIndex: foo) {
                 answers.emplace_back();
@@ -41,8 +37,8 @@ int main() {
         };
         ConverterJSON::ClearFiles();
         ConverterJSON::putAnswers(result());
-    } catch (const runtime_error e) {
-        cerr << e.what() << endl;
+    } catch (const runtime_error &error) {
+        cerr << error.what() << endl;
     }
     return 0;
 }

@@ -37,6 +37,8 @@ void indexingFiles(const string &document, const size_t &i) {
 }
 
 class InvertedIndex {
+private:
+    std::vector<std::string> docs;
 public:
     InvertedIndex() = default;
 
@@ -55,10 +57,7 @@ public:
         }
     }
 
-    static std::vector<Entry> GetWordCount(const std::string &word) {
+    std::vector<Entry> GetWordCount(const std::string &word) {
         return freq_dictionary[word];
     }
-
-private:
-    std::vector<std::string> docs;
 };
