@@ -11,7 +11,7 @@ struct RelativeIndex {
 
 class SearchServer {
 public:
-    explicit SearchServer(InvertedIndex &idx) : _index(idx) {};
+    explicit SearchServer(InvertedIndex &idx) : index(idx) {};
 
     vector<vector<RelativeIndex>> search(const vector<std::string> &queries_input) {
         vector<vector<RelativeIndex>> results;
@@ -21,30 +21,31 @@ public:
             float maxRelevance = 0;
             stringstream ss(query);
             string word;
-            while (getline(ss, word, ' ')) {
-                std::vector<Entry> temp = _index.GetWordCount(word);
+            while (ss >> word) {
+                std::vector<Entry> temp = index.GetWordCount(word);
                 if (!word.empty() && !temp.empty()){
                     for (auto & t : temp){
                         absRelevance[t.doc_id] += t.count;
                         maxRelevance = max(maxRelevance, (float)absRelevance[t.doc_id]);
                     }
                 }
-                if(ss.eof()) break;
             }
             results.emplace_back();
             if (!absRelevance.empty())
                 for (auto &[key, value]: absRelevance)
                     results.back().push_back({key, (float)value / maxRelevance});
         }
-        for(auto &r: results) {
-            auto &tempToSort = r;
+        for(auto &block: results) {
+            auto &tempToSort = block;
             sort(tempToSort.begin(), tempToSort.end(), [](const RelativeIndex &a, const RelativeIndex &b) {
-                return a.rank > b.rank;
+                return a.rank > b.rank || (a.rank == b.rank && a.doc_id < b.doc_id);
             });
         }
+        for(auto &block: results)
+            block.resize(block.size()>5 ? ConverterJSON::GetResponsesLimit() : block.size());
         return results;
     }
 
 private:
-    InvertedIndex _index;
+    InvertedIndex index;
 };

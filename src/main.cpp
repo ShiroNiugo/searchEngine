@@ -5,7 +5,9 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-#include <cmath>
+
+#include <thread>
+#include <mutex>
 
 #include <nlohmann/json.hpp>
 
@@ -15,6 +17,8 @@ using json = nlohmann::json;
 #include "../header/converterJSON.h"
 #include "../header/invertedIndex.h"
 #include "../header/searchServer.h"
+
+//#include "testGtest.h"
 
 int main() {
     try {
@@ -30,12 +34,8 @@ int main() {
             auto foo = server.search(requests);
             for (auto const &relIndex: foo) {
                 answers.emplace_back();
-                int limit = (maxLimit != 0) ? maxLimit : ConverterJSON::GetResponsesLimit();
-                for (auto request: relIndex) {
+                for (auto request: relIndex)
                     answers.back().emplace_back(request.doc_id, request.rank);
-                    limit--;
-                    if (limit == 0) break;
-                }
             }
             return answers;
         };

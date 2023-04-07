@@ -9,44 +9,56 @@ struct Entry {
     }
 };
 
+std::map<std::string, std::vector<Entry>> freq_dictionary;
+int countActiveThread = 0;
+mutex readAccess;
+
+void indexingFiles(const string &document, const size_t &i) {
+    stringstream ss(document);
+    std::string word;
+    unique_lock<mutex> lock(readAccess);
+    while (ss >> word) {
+        if (freq_dictionary.find(word) == freq_dictionary.end())
+            freq_dictionary[word].push_back({i, 1});
+        else {
+            bool findKey = false;
+            for (auto &[key, value]: freq_dictionary.find(word)->second)
+                if (key == i) {
+                    value++;
+                    findKey = true;
+                    break;
+                }
+            if (!findKey)
+                freq_dictionary[word].push_back({i, 1});
+        }
+    }
+    lock.unlock();
+    countActiveThread--;
+}
+
 class InvertedIndex {
 public:
     InvertedIndex() = default;
 
     void UpdateDocumentBase(std::vector<std::string> input_docs) {
         docs = std::move(input_docs);
-        stringstream ss;
-        std::string word;
         for (size_t i = 0; i < docs.size(); i++) {
-            if(!docs[i].empty()) {
-                ss.str(docs[i]);
-                while (ss >> word) {
-                    if (freq_dictionary.find(word) == freq_dictionary.end()) {
-                        freq_dictionary[word].push_back({i, 1});
-                    } else {
-                        bool findKey = false;
-                        for(auto &[key, value] : freq_dictionary.find(word)->second)
-                            if(key == i) { value++; findKey = true; break;}
-                        if(!findKey)
-                            freq_dictionary[word].push_back({i, 1});
-                    }
-                    if (ss.eof()) break;
-                }
-                ss.clear();
-            }
+            countActiveThread++;
+            thread(indexingFiles, docs[i], i).detach();
         }
-        for(auto &[key, value]: freq_dictionary) {
+        while (countActiveThread != 0);
+        lock_guard<mutex> lockGuard(readAccess);
+        for (auto &[key, value]: freq_dictionary) {
             sort(value.begin(), value.end(), [](const Entry &a, const Entry &b) {
-                return a.count < b.count;
+                return a.doc_id < b.doc_id;
             });
         }
     }
 
-    std::vector<Entry> GetWordCount(const std::string &word) {
+    static std::vector<Entry> GetWordCount(const std::string &word) {
         return freq_dictionary[word];
     }
 
 private:
-    std::vector<std::string> docs{};
-    std::map<std::string, std::vector<Entry>> freq_dictionary;
+    std::vector<std::string> docs;
 };

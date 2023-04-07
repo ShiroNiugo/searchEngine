@@ -18,18 +18,16 @@ public:
             for (const auto &document: file.find("files").value()) {
                 input.open(document);
                 if (input.is_open()) {
-                    std::string words;
+                    std::string word, words;
                     int countWords = 0;
-                    while (!input.eof()) {
-                        std::string word;
-                        input >> word;
+                    while (input >> word) {
                         for(auto l : word)
                             if(!islower(l))
                                 throw runtime_error("The words in the file do not follow the rules written in the instructions!");
 
                         words += (countWords != 0 ? " " : "") + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
-                        if (countWords > 1000) break;
+                        if (countWords >= 1000) break;
                     }
                     textDocuments.push_back(words);
                     input.close();
