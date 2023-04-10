@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <exception>
 
 #include <thread>
 #include <mutex>
@@ -18,9 +19,9 @@ using json = nlohmann::json;
 //#include "testGtest.h"
 
 int main() {
+    if (!ConverterJSON::fileConfigVerify())
+        return 0;
     try {
-        if (!ConverterJSON::fileConfigVerify())
-            return 0;
         InvertedIndex invIndex;
         invIndex.UpdateDocumentBase(ConverterJSON::GetTextDocuments());
         vector<std::string> requests = ConverterJSON::GetRequests();

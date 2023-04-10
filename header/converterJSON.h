@@ -8,6 +8,21 @@ class ConverterJSON {
 public:
     ConverterJSON() = default;
 
+    static bool fileConfigVerify() {
+        ifstream input(fileConfig);
+        if (input.is_open()) {
+            json temp;
+            input >> temp;
+            input.close();
+            cout << "name: " << temp.find("config").value().find("name").value() << "\n" <<
+                 "version " << temp.find("config").value().find("version").value() << endl;
+            return true;
+        } else {
+            cout << "config.json file is missing!" << endl;
+            return false;
+        }
+    }
+
     static std::vector<std::string> GetTextDocuments() {
         ifstream input(fileConfig);
         if (input.is_open()) {
@@ -76,6 +91,13 @@ public:
 
     static void putAnswers(const vector<vector<pair<int, float>>> &answers) {
         ifstream input(fileAnswers);
+        if(!input.is_open()) {
+            ofstream file(fileAnswers);
+            if (file.is_open()) {
+                file << (json) {{"answers", {}}};
+                file.close();
+            }
+        }
         json tempAnswers;
         input >> tempAnswers;
         input.close();
@@ -105,26 +127,4 @@ public:
         output.close();
     }
 
-    static bool fileConfigVerify() {
-        ifstream input(fileConfig);
-        if (input.is_open()) {
-            json temp;
-            input >> temp;
-            input.close();
-            cout << "name: " << temp.find("config").value().find("name").value() << "\n" <<
-                 "version " << temp.find("config").value().find("version").value() << endl;
-            return true;
-        } else {
-            cout << "config.json file is missing!" << endl;
-            return false;
-        }
-    }
-
-    static void ClearFiles() {
-        ofstream clearFile(fileAnswers);
-        if (clearFile.is_open()) {
-            clearFile << (json) {{"answers", {}}};
-            clearFile.close();
-        }
-    }
 };
