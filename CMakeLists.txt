@@ -1,32 +1,41 @@
 cmake_minimum_required(VERSION 3.24)
-project(searchEngine)
+project(searchEngine VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 17)
+# Read the JSON file.
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/config.json MY_JSON_STRING)
+string(JSON CUR_CONFIG GET ${MY_JSON_STRING} config)
+string(JSON CUR_VERSION GET ${CUR_CONFIG} ${IDX} version)
 
-add_executable(${PROJECT_NAME} "src/main.cpp" "header/converterJSON.h" "header/invertedIndex.h" "header/searchServer.h" src/testGtest.h)
+if (${CUR_VERSION} EQUAL ${CMAKE_PROJECT_VERSION})
+    set(CMAKE_CXX_STANDARD 17)
 
-include(FetchContent)
+    add_executable(${PROJECT_NAME} "src/main.cpp" "header/converterJSON.h" "header/invertedIndex.h" "header/searchServer.h")
 
-#nlohmann_json
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
-FetchContent_MakeAvailable(json)
+    include(FetchContent)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+    #nlohmann_json
+    FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+    FetchContent_MakeAvailable(json)
 
-#[===[]===]
-#GoogleTest
-FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
+    target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+    #[===[]===]
+    #GoogleTest
+    FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
 
-set(gtest_disable_pthreads on)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-FetchContent_MakeAvailable(googletest)
+    set(gtest_disable_pthreads on)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-enable_testing()
+    FetchContent_MakeAvailable(googletest)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE gtest_main)
+    enable_testing()
 
-include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME})
+    target_link_libraries(${PROJECT_NAME} PRIVATE gtest_main)
+
+    include(GoogleTest)
+    gtest_discover_tests(${PROJECT_NAME})
+else ()
+    message("config.json has incorrect file version")
+endif ()

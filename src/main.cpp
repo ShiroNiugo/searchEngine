@@ -36,7 +36,6 @@ int main() {
             }
             return answers;
         };
-        ConverterJSON::ClearFiles();
         ConverterJSON::putAnswers(result());
     } catch (const runtime_error &error) {
         cerr << error.what() << endl;

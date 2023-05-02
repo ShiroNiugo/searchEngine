@@ -36,9 +36,10 @@ public:
                     std::string word, words;
                     int countWords = 0;
                     while (input >> word) {
-                        for(auto l : word)
-                            if(!islower(l))
-                                throw runtime_error("The words in the file do not follow the rules written in the instructions!");
+                        for (auto l: word)
+                            if (!islower(l))
+                                throw runtime_error(
+                                        "The words in the file do not follow the rules written in the instructions!");
 
                         words += (countWords != 0 ? " " : "") + ((word.size() <= 100) ? word : word.substr(0, 100));
                         countWords++;
@@ -46,7 +47,7 @@ public:
                     }
                     textDocuments.push_back(words);
                     input.close();
-                }else{
+                } else {
                     printf("%s file not found!\n", to_string(document).c_str());
                     textDocuments.emplace_back();
                 }
@@ -64,7 +65,7 @@ public:
             input.close();
             return temp.find("config").value().find("max_responses").value();
         }
-        return 0;
+        return 5;
     }
 
     static std::vector<std::string> GetRequests() {
@@ -74,7 +75,7 @@ public:
         input.close();
         std::vector<std::string> tempValue = tempRequests.begin().value();
         if (tempValue.size() > 1000) tempValue.resize(1000);
-        for (auto & item : tempValue) {
+        for (auto &item: tempValue) {
             stringstream ss(item);
             string word;
             for (int i = 0; getline(ss, word, ' '); i++) {
@@ -82,7 +83,8 @@ public:
                 if (!word.empty()) {
                     for (auto l: word)
                         if (!islower(l))
-                            throw runtime_error("The request does not comply with the rules written in the instructions!");
+                            throw runtime_error(
+                                    "The request does not comply with the rules written in the instructions!");
                 }
             }
         }
@@ -90,40 +92,31 @@ public:
     }
 
     static void putAnswers(const vector<vector<pair<int, float>>> &answers) {
-        ifstream input(fileAnswers);
-        if(!input.is_open()) {
-            ofstream file(fileAnswers);
-            if (file.is_open()) {
-                file << (json) {{"answers", {}}};
-                file.close();
-            }
-        }
+        int sizeRequest = 1;
         json tempAnswers;
-        input >> tempAnswers;
-        input.close();
-        auto sizeRequest = 1;
-        for (const auto &one: answers) {
-            json temp;
+        for (const auto &block: answers) {
             std::string request = "request000";
             ((to_string(sizeRequest).length() < 3) ? request.erase(
                     request.length() - to_string(sizeRequest).length())
                                                    : request.erase(7));
             request += to_string(sizeRequest);
             sizeRequest++;
-            if (one.empty()) {
-                temp = {request, {{"result", "false"}}};
+            if (block.empty()) {
+                tempAnswers.emplace(request, (json){{"result", "false"}});
+            } else if (block.size() == 1) {
+                tempAnswers.emplace(request, (json){{"result", "true"},
+                         {"docId", block.begin()->first},
+                         {"rank", round((double) block.begin()->second * 1000) / 1000}});
             } else {
                 json t;
-                for (const auto &[key, value]: one) {
-                    t += {{"doc_id", key},
-                          {"rank",   round((double) value * 1000) / 1000}};
-                }
-                temp = {request, {{"result", "true"}, {"relevance", t}}};
+                for (const auto &[key, value]: block)
+                    t += {{"docId", key},
+                          {"rank",  round((double) value * 1000) / 1000}};
+                tempAnswers.emplace(request, (json){{"result", "true"},{"relevance", t}});
             }
-            tempAnswers.begin().value().push_back(temp);
         }
         ofstream output(fileAnswers);
-        output << tempAnswers;
+        output << (json){{"answers", tempAnswers.empty()? (json){} : tempAnswers}};
         output.close();
     }
 
