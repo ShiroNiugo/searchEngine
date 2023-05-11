@@ -1,26 +1,9 @@
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <exception>
-
-#include <thread>
-#include <mutex>
-
-#include <nlohmann/json.hpp>
-
-using namespace std;
-using json = nlohmann::json;
-
-#include "../header/converterJSON.h"
-#include "../header/invertedIndex.h"
-#include "../header/searchServer.h"
-
-//#include "testGtest.h"
+#include "converterJSON.h"
+#include "invertedIndex.h"
+#include "searchServer.h"
 
 int main() {
-    if (!ConverterJSON::fileConfigVerify())
-        return 0;
+    if (!ConverterJSON::fileConfigVerify()) return 0;
     try {
         InvertedIndex invIndex;
         invIndex.UpdateDocumentBase(ConverterJSON::GetTextDocuments());
