@@ -1,9 +1,6 @@
 #include "searchServer.h"
 #include "gtest/gtest.h"
 
-TEST(SearchServer, search) {
-
-}
 TEST(TestCaseSearchServer, TestSimple) {
     const vector<string> docs = {
             "milk milk milk milk water water water",

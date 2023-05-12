@@ -12,7 +12,7 @@ int main() {
         SearchServer server(invIndex);
         auto result = [&server, &requests](vector<vector<pair<int, float>>> answers = {}) {
             auto foo = server.search(requests);
-            for (auto const &relIndex: foo) {
+            for (auto &relIndex: foo) {
                 answers.emplace_back();
                 for (auto request: relIndex)
                     answers.back().emplace_back(request.doc_id, request.rank);

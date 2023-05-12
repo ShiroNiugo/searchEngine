@@ -1,14 +1,6 @@
 #include "invertedIndex.h"
 #include "gtest/gtest.h"
 
-TEST(InvertedIndex, updateDocumentBase) {
-
-}
-
-TEST(InvertedIndex, getWordCount) {
-
-}
-
 void TestInvertedIndexFunctionality
         (const vector<string> &docs, const vector<string> &requests, const std::vector<vector<Entry>> &expected) {
     std::vector<std::vector<Entry>> result;

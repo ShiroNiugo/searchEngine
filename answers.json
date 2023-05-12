@@ -1,1 +1,1 @@
-{"answers":{"request001":{"result":"false"},"request002":{"result":"false"},"request003":{"result":"false"}}}
+{"answers":{"request001":{"relevance":[{"docId":5,"rank":1.0},{"docId":10,"rank":0.901},{"docId":12,"rank":0.901},{"docId":13,"rank":0.901},{"docId":14,"rank":0.901}],"result":"true"},"request002":{"docId":3,"rank":1.0,"result":"true"},"request003":{"result":"false"}}}
