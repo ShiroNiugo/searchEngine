@@ -1,26 +1,9 @@
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <exception>
-
-#include <thread>
-#include <mutex>
-
-#include <nlohmann/json.hpp>
-
-using namespace std;
-using json = nlohmann::json;
-
-#include "../header/converterJSON.h"
-#include "../header/invertedIndex.h"
-#include "../header/searchServer.h"
-
-//#include "testGtest.h"
+#include "converterJSON.h"
+#include "invertedIndex.h"
+#include "searchServer.h"
 
 int main() {
-    if (!ConverterJSON::fileConfigVerify())
-        return 0;
+    if (!ConverterJSON::fileConfigVerify()) return 0;
     try {
         InvertedIndex invIndex;
         invIndex.UpdateDocumentBase(ConverterJSON::GetTextDocuments());
@@ -29,7 +12,7 @@ int main() {
         SearchServer server(invIndex);
         auto result = [&server, &requests](vector<vector<pair<int, float>>> answers = {}) {
             auto foo = server.search(requests);
-            for (auto const &relIndex: foo) {
+            for (auto &relIndex: foo) {
                 answers.emplace_back();
                 for (auto request: relIndex)
                     answers.back().emplace_back(request.doc_id, request.rank);
