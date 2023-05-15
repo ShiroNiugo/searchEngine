@@ -1,8 +1,9 @@
 #include "converterJSON.h"
 
+using namespace std;
+
 bool ConverterJSON::fileConfigVerify() {
-    ifstream input(fileConfig);
-    if (input.is_open()) {
+    if (ifstream input(fileConfig); input.is_open()) {
         json temp;
         input >> temp;
         input.close();
@@ -15,21 +16,21 @@ bool ConverterJSON::fileConfigVerify() {
 }
 
 std::vector<std::string> ConverterJSON::GetTextDocuments() {
-    ifstream input(fileConfig);
-    if (input.is_open()) {
+    if (ifstream input(fileConfig); input.is_open()) {
         json file;
         input >> file;
         input.close();
         std::vector<std::string> textDocuments;
-        for (auto &document: file.find("files").value()) {
+        for (auto const &document: file.find("files").value()) {
             input.open(document);
             if (input.is_open()) {
-                std::string word, words;
+                std::string word;
+                std::string words;
                 int countWords = 0;
                 while (input >> word) {
                     for (auto l: word)
                         if (!islower(l))
-                            throw runtime_error(
+                            throw invalid_argument(
                                     "The words in the file do not follow the rules written in the instructions!");
 
                     words += (countWords != 0 ? " " : "") + ((word.size() <= 100) ? word : word.substr(0, 100));
@@ -49,8 +50,7 @@ std::vector<std::string> ConverterJSON::GetTextDocuments() {
 }
 
 int ConverterJSON::GetResponsesLimit() {
-    ifstream input(fileConfig);
-    if (input.is_open()) {
+    if (ifstream input(fileConfig); input.is_open()) {
         json temp;
         input >> temp;
         input.close();
@@ -66,17 +66,18 @@ std::vector<std::string> ConverterJSON::GetRequests() {
     input.close();
     std::vector<std::string> tempValue = tempRequests.begin().value();
     if (tempValue.size() > 1000) tempValue.resize(1000);
-    for (auto &item: tempValue) {
+    for (auto const &item: tempValue) {
         stringstream ss(item);
         string word;
-        for (int i = 0; getline(ss, word, ' '); i++) {
+        int i = 0;
+        while(getline(ss, word, ' ')) {
             if (i > 9 || ss.eof()) break;
             if (!word.empty()) {
-                for (auto l: word)
+                for(auto l: word)
                     if (!islower(l))
-                        throw runtime_error(
-                                "The request does not comply with the rules written in the instructions!");
+                        throw std::invalid_argument("The request does not comply with the rules written in the instructions!");
             }
+            i++;
         }
     }
     return tempValue;
@@ -84,14 +85,12 @@ std::vector<std::string> ConverterJSON::GetRequests() {
 
 void ConverterJSON::putAnswers(const vector<vector<pair<int, float>>> &answers) {
     if (!answers.empty()) {
-        cout << "Result: answers to " << answers.size() << " queries were found" << endl;
         int sizeRequest = 1;
         json tempAnswers;
         for (auto &block: answers) {
             std::string request = "request000";
             ((to_string(sizeRequest).length() < 3) ? request.erase(
-                    request.length() - to_string(sizeRequest).length())
-                                                   : request.erase(7));
+                    request.length() - to_string(sizeRequest).length()) : request.erase(7));
             request += to_string(sizeRequest);
             sizeRequest++;
             if (block.empty()) tempAnswers.emplace(request, (json) {{"result", "false"}});
@@ -101,15 +100,17 @@ void ConverterJSON::putAnswers(const vector<vector<pair<int, float>>> &answers) 
                                                      {"rank",   round((double) block.begin()->second * 1000) / 1000}});
             else {
                 json t;
-                for (auto &[key, value]: block)
+                for(auto &[key, value]: block)
                     t += {{"docId", key},
                           {"rank",  round((double) value * 1000) / 1000}};
-                tempAnswers.emplace(request, (json) {{"result",    "true"},
-                                                     {"relevance", t}});
+                tempAnswers.emplace(request, (json) {{"result", "true"}, {"relevance", t}});
             }
         }
         ofstream output(fileAnswers);
-        output << (json) {{"answers", tempAnswers.empty() ? (json) {} : tempAnswers}};
-        output.close();
+        if(output.is_open()) {
+            cout << "Result: answers to " << answers.size() << " queries were found" << endl;
+            output << (json) {{"answers", tempAnswers.empty() ? (json) {} : tempAnswers}};
+            output.close();
+        }else {cout << "The file \"answers.json\" does not open" << endl;}
     } else cout << "Result: no answers to the queries were found" << endl;
 }

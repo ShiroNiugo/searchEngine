@@ -4,12 +4,11 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-using namespace std;
-using json = nlohmann::json;
+constexpr char fileConfig[] = "config.json";
+constexpr char fileRequests[] = "requests.json";
+constexpr char fileAnswers[] = "answers.json";
 
-#define fileConfig "config.json"
-#define fileRequests "requests.json"
-#define fileAnswers "answers.json"
+using json = nlohmann::json;
 
 class ConverterJSON {
 public:
@@ -23,5 +22,5 @@ public:
 
     static std::vector<std::string> GetRequests();
 
-    static void putAnswers(const vector<vector<pair<int, float>>> &answers);
+    static void putAnswers(const std::vector<std::vector<std::pair<int, float>>> &answers);
 };

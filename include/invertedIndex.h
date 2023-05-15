@@ -11,8 +11,6 @@
 #include <thread>
 #include <mutex>
 
-using namespace std;
-
 struct Entry {
     size_t doc_id;
     size_t count;

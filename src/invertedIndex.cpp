@@ -1,8 +1,10 @@
 #include "invertedIndex.h"
 
-map<string, vector<Entry>> dictionary;
+using namespace std;
 
-mutex readAccess;
+std::map<std::string, std::vector<Entry>> dictionary;
+
+std::mutex readAccess;
 
 void indexingFiles(vector<string> docs, size_t i) {
     stringstream ss(docs[i]);
@@ -34,7 +36,7 @@ void detachDocs(vector<string> docs){
 void InvertedIndex::UpdateDocumentBase(std::vector<std::string> input_docs) {
     docs = std::move(input_docs);
     thread(detachDocs, docs).join();
-    lock_guard<mutex> lockGuard(readAccess);
+    scoped_lock<mutex> lockGuard(readAccess);
     freq_dictionary = dictionary;
 
     for (auto &[key, value]: freq_dictionary) {

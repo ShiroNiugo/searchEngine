@@ -1,5 +1,6 @@
 #include "searchServer.h"
 #include "gtest/gtest.h"
+using namespace std;
 
 TEST(TestCaseSearchServer, TestSimple) {
     const vector<string> docs = {
@@ -10,7 +11,7 @@ TEST(TestCaseSearchServer, TestSimple) {
     };
     const vector<string> request = {"milk water", "sugar"};
     const std::vector<vector<RelativeIndex>> expected = {
-            {{2, 1}, {0, 0.7}, {1, 0.3}},
+            {{2, 1}, {0, 0.7f}, {1, 0.3f}},
             {}
     };
     InvertedIndex idx;
@@ -19,7 +20,7 @@ TEST(TestCaseSearchServer, TestSimple) {
     std::vector<vector<RelativeIndex>> result = srv.search(request);
 
     cout << "{ " << endl;
-    for (auto block: result) {
+    for (const auto& block: result) {
         cout << "{ ";
         for (auto &[key, value]: block)
             cout << key << " " << value << ", ";
@@ -59,9 +60,9 @@ TEST(TestCaseSearchServer, TestTop5) {
             {
                     {7, 1},
                     {14, 1},
-                    {0, 0.666666687},
-                    {1, 0.666666687},
-                    {2, 0.666666687}
+                    {0, 0.666666687f},
+                    {1, 0.666666687f},
+                    {2, 0.666666687f}
             }
     };
     InvertedIndex idx;
