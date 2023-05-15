@@ -7,8 +7,6 @@
 #include "invertedIndex.h"
 #include "converterJSON.h"
 
-using namespace std;
-
 struct RelativeIndex {
     size_t doc_id;
     float rank;
@@ -20,9 +18,9 @@ struct RelativeIndex {
 
 class SearchServer {
 public:
-    explicit SearchServer(InvertedIndex &idx) : index(idx) {};
+    explicit SearchServer(const InvertedIndex &idx) : index(idx) {};
 
-    vector<vector<RelativeIndex>> search(const vector<std::string> &queries_input);
+    std::vector<std::vector<RelativeIndex>> search(const std::vector<std::string> &queries_input);
 
 private:
     InvertedIndex index;

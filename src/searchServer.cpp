@@ -1,5 +1,7 @@
 #include "searchServer.h"
 
+using namespace std;
+
 vector <vector<RelativeIndex>> SearchServer::search(const vector <std::string> &queries_input) {
     vector <vector<RelativeIndex>> results;
 
@@ -11,7 +13,7 @@ vector <vector<RelativeIndex>> SearchServer::search(const vector <std::string> &
         while (ss >> word) {
             std::vector <Entry> temp = index.GetWordCount(word);
             if (!word.empty() && !temp.empty()) {
-                for (auto &t: temp) {
+                for(auto const &t: temp) {
                     absRelevance[t.doc_id] += t.count;
                     maxRelevance = max(maxRelevance, (float) absRelevance[t.doc_id]);
                 }
@@ -19,7 +21,7 @@ vector <vector<RelativeIndex>> SearchServer::search(const vector <std::string> &
         }
         results.emplace_back();
         if (!absRelevance.empty())
-            for (auto &[key, value]: absRelevance)
+            for(auto const &[key, value]: absRelevance)
                 results.back().push_back({key, (float) value / maxRelevance});
     }
     for (auto &block: results) {

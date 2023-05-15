@@ -2,6 +2,8 @@
 #include "invertedIndex.h"
 #include "searchServer.h"
 
+using namespace std;
+
 int main() {
     if (!ConverterJSON::fileConfigVerify()) return 0;
     try {
@@ -12,7 +14,7 @@ int main() {
         SearchServer server(invIndex);
         auto result = [&server, &requests](vector<vector<pair<int, float>>> answers = {}) {
             auto foo = server.search(requests);
-            for (auto &relIndex: foo) {
+            for (auto const &relIndex: foo) {
                 answers.emplace_back();
                 for (auto request: relIndex)
                     answers.back().emplace_back(request.doc_id, request.rank);
@@ -20,7 +22,7 @@ int main() {
             return answers;
         };
         ConverterJSON::putAnswers(result());
-    } catch (const runtime_error &error) {
+    } catch (const invalid_argument &error) {
         cerr << error.what() << endl;
     }
     return 0;

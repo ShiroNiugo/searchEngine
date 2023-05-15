@@ -1,8 +1,9 @@
 #include "invertedIndex.h"
 #include "gtest/gtest.h"
+using namespace std;
 
 void TestInvertedIndexFunctionality
-        (const vector<string> &docs, const vector<string> &requests, const std::vector<vector<Entry>> &expected) {
+        (const vector<string> &docs, const vector<string> &requests, const vector<vector<Entry>> &expected) {
     std::vector<std::vector<Entry>> result;
     InvertedIndex idx;
     idx.UpdateDocumentBase(docs);
