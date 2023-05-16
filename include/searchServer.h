@@ -2,7 +2,11 @@
 
 #include <string>
 #include <iostream>
+#include <utility>
 #include <vector>
+
+#include <thread>
+#include <mutex>
 
 #include "invertedIndex.h"
 #include "converterJSON.h"
@@ -18,7 +22,7 @@ struct RelativeIndex {
 
 class SearchServer {
 public:
-    explicit SearchServer(const InvertedIndex &idx) : index(idx) {};
+    explicit SearchServer(InvertedIndex idx) : index(std::move(idx)) {};
 
     std::vector<std::vector<RelativeIndex>> search(const std::vector<std::string> &queries_input);
 
