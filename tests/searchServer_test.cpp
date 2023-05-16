@@ -60,9 +60,9 @@ TEST(TestCaseSearchServer, TestTop5) {
             {
                     {7, 1},
                     {14, 1},
-                    {0, 0.666666687f},
-                    {1, 0.666666687f},
-                    {2, 0.666666687f}
+                    {0, 0.666666687},
+                    {1, 0.666666687},
+                    {2, 0.666666687}
             }
     };
     InvertedIndex idx;
@@ -70,12 +70,12 @@ TEST(TestCaseSearchServer, TestTop5) {
     SearchServer srv(idx);
     std::vector<vector<RelativeIndex>> result = srv.search(request);
 
-    cout << "{ " << endl;
+    cout << "{ ";
     for (const auto& block: result) {
-        cout << "{ ";
+        cout << "{";
         for (auto &[key, value]: block)
             cout << key << " " << value << ", ";
-        cout << "}" << endl;
+        cout << "}";
     }
     cout << " }" << endl;
     ASSERT_EQ(result, expected);
