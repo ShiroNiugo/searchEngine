@@ -2,12 +2,11 @@
 
 using namespace std;
 
-std::mutex access;
-
 vector <vector<RelativeIndex>> SearchServer::search(const vector<std::string> &queries_input) {
     vector<vector<RelativeIndex>> results;
+    std::mutex lockAccess;
 
-    auto indexDocuments = [this, &results](string const& query) {
+    auto indexDocuments = [this, &results, &lockAccess](string const& query) {
         map<size_t, size_t> absRelevance;
         float maxRelevance = 0;
         stringstream ss(query);
@@ -21,17 +20,22 @@ vector <vector<RelativeIndex>> SearchServer::search(const vector<std::string> &q
                 }
             }
         }
-        scoped_lock<mutex> lockGuard(access);
+        scoped_lock<mutex> guard(lockAccess);
         results.emplace_back();
         if (!absRelevance.empty())
             for(auto const &[key, value]: absRelevance)
                 results.back().push_back({key, (float) value / maxRelevance});
     };
 
-    for(auto query : queries_input)
-        thread(indexDocuments, query).join();
+    vector<thread> tempThread(queries_input.size());
+    int i = 0;
+    for (auto query : queries_input)
+        tempThread[i++] = thread(indexDocuments, query);
 
-    scoped_lock<mutex> lockGuard(access);
+    for (auto &t : tempThread)
+        t.join();
+
+    scoped_lock<mutex> guard(lockAccess);
     for (auto &block: results) {
         auto &tempToSort = block;
         sort(tempToSort.begin(), tempToSort.end(), [](const RelativeIndex &a, const RelativeIndex &b) {
@@ -40,5 +44,6 @@ vector <vector<RelativeIndex>> SearchServer::search(const vector<std::string> &q
     }
     for (auto &block: results)
         block.resize(block.size() > 5 ? ConverterJSON::GetResponsesLimit() : block.size());
+
     return results;
 }
