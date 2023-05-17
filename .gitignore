@@ -1,1 +1,3 @@
 /cmake-build-debug/
+!/tests/GtestTests.exe
+!/searchEngine.exe
