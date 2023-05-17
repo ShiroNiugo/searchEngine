@@ -2,36 +2,41 @@
 
 using namespace std;
 
-std::mutex readAccess;
-
 void InvertedIndex::UpdateDocumentBase(std::vector<std::string> input_docs) {
     docs = std::move(input_docs);
+    std::mutex readAccess;
 
-    auto indexingFiles = [this](const string& doc, size_t i) {
+    auto indexingFiles = [this, &readAccess](const string& doc, size_t index) {
         stringstream ss(doc);
         std::string word;
-        scoped_lock<mutex> lockGuard(readAccess);
+        scoped_lock<mutex> guard(readAccess);
         while (ss >> word) {
-            if (freq_dictionary.find(word) == freq_dictionary.end())
-                freq_dictionary[word].push_back({i, 1});
-            else {
-                bool findKey = false;
-                for (auto &[key, value]: freq_dictionary.find(word)->second)
-                    if (key == i) {
-                        value++;
-                        findKey = true;
-                        break;
-                    }
-                if (!findKey)
-                    freq_dictionary[word].push_back({i, 1});
+            bool noIterator = true;
+            if (auto findWord = freq_dictionary.find(word); findWord != freq_dictionary.end()) {
+                auto value = &findWord->second;
+                auto temp = find_if(value->begin(), value->end(), [&index](const Entry &a) {
+                    return a.doc_id == index;
+                });
+                if(temp != value->end()) {
+                    temp->count++;
+                    noIterator = false;
+                }
             }
+            if(noIterator) freq_dictionary[word].push_back({index, 1});
         }
     };
 
-    for (size_t i = 0; i < docs.size(); i++)
-        thread(indexingFiles, docs[i], i).join();
+    vector<thread> tempThread(docs.size());
+    int i = 0;
+    for (auto doc : docs) {
+        tempThread[i] = thread(indexingFiles, doc, i);
+        i++;
+    }
 
-    scoped_lock<mutex> lockGuard(readAccess);
+    for (auto &t : tempThread)
+        t.join();
+
+    scoped_lock<mutex> guard(readAccess);
     for (auto &[key, value]: freq_dictionary) {
         sort(value.begin(), value.end(), [](const Entry &a, const Entry &b) {
             return a.doc_id < b.doc_id;
